@@ -1,0 +1,41 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}AI Chat - My Django App{% endblock %}
+
+{% block content %}
+<section class="ai-chat">
+    <h1>AI Chat</h1>
+    <div id="chat-box">
+        <div id="chat-log"></div>
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+</section>
+
+<script>
+    document.getElementById('send-button').addEventListener('click', function() {
+        const userInput = document.getElementById('user-input').value;
+        const chatLog = document.getElementById('chat-log');
+
+        // Add user's message to the chat log
+        chatLog.innerHTML += `<div class="user-message">You: ${userInput}</div>`;
+
+        // Send the user's input to the server
+        fetch('/ai-chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `user_input=${encodeURIComponent(userInput)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Add AI's response to the chat log
+            chatLog.innerHTML += `<div class="ai-message">AI: ${data.response}</div>`;
+            document.getElementById('user-input').value = '';  // Clear input field
+        });
+    });
+</script>
+{% endblock %}
